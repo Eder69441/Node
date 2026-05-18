@@ -1,56 +1,91 @@
 const express = require('express')
 const router = express.Router()
 
-let peliculas = []
+const peliculaModel = require('../models/peliculaModel')
 
-//Metodo Get 
-router.get('/peliculas', (req, res) => {
-    res.json(peliculas)
+//Metodo Get de HTTp
+router.get('/peliculas', async (req, res) => {
+
+    try {
+        const peliculas = await peliculaModel.obtenerPelicula()
+        res.json(peliculas)
+
+    }
+    catch(error) {
+        res. status(500).send( {error: 'Error consultando las peliculas'})
+    }
+    
 })
 
 //Método POST 
-router.post('/peliculas', (req, res) => {
-    const pelicula = req.body
-    pelicula.id = peliculas.length + 1
-    peliculas.push(pelicula)
-    res.json(pelicula)
+router.post('/peliculas', async (req, res) => {
+
+    try {
+        const pelicula = req.body
+        const resultado = await peliculaModel.crearPelicula(pelicula)
+
+            res.json({
+            mensaje: 'Película creada',
+            idInsertado: resultado.insertId
+        })
+    }   catch(error) {
+
+            res.status(500).json({
+            error: 'Error creando película'
+        })
+
+    }
+    
+    // pelicula.id = pelicula.length + 1
+    // pelicula.push(pelicula)
+    // res.json(pelicula)
 })
 
 //Método PUT 
-router.put('/peliculas/:id', (req, res) => {
-    const id = parseInt(req.params.id)
+router.put('/peliculas/:id', async (req, res) => {
+     try {
 
-    const pelicula = peliculas.find(p => p.id === id)
+        const id = req.params.id
+        const pelicula = req.body
 
-    if(pelicula) {
-        const nuevaPelicula = req.body
+        const resultado = await peliculaModel.actualizarPelicula(id, pelicula)
 
-        pelicula.titulo = nuevaPelicula.titulo
-        pelicula.director = nuevaPelicula.director
-        pelicula.anio = nuevaPelicula.anio
-        pelicula.genero = nuevaPelicula.genero
+        if(resultado.affectedRows === 0) {
+            return res.status(404).send('Película no encontrada')
+        }
 
+        res.send('Película actualizada')
 
-        res.json(pelicula)
-    }else {
-        res.status(404).send('Pelicula no encontrada')
+    } catch(error) {
+
+        res.status(500).send('Error actualizando película')
+
     }
+
+
+
 })
 
 //Método DELETE 
-router.delete('/peliculas/:id', (req, res) => {
-    const id = parseInt(req.params.id)
+router.delete('/peliculas/:id', async (req, res) => {
 
-    const pelicula = peliculas.find(p => p.id === id)
-    
-    if(pelicula) {
-        peliculas = peliculas.filter(p => p.id != id)
+    try {
+
+        const id = req.params.id
+
+        const resultado = await peliculaModel.eliminarPelicula(id)
+
+        if(resultado.affectedRows === 0) {
+            return res.status(404).send('Película no encontrada')
+        }
+
         res.send('Película eliminada')
 
-    } else {
-        res.status(404).send('Película no encontrada')
-    }
+    } catch(error) {
 
+        res.status(500).send('Error eliminando película')
+
+    }
 
 })
 

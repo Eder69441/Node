@@ -36,9 +36,7 @@ router.post('/peliculas', async (req, res) => {
 
     }
     
-    // pelicula.id = pelicula.length + 1
-    // pelicula.push(pelicula)
-    // res.json(pelicula)
+
 })
 
 //Método PUT 
